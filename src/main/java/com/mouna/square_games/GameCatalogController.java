@@ -1,25 +1,40 @@
 package com.mouna.square_games;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
 
 @RestController
 public class GameCatalogController {
 
-    private final GameCatalog gameCatalog;
+    private final List<GamePlugin> gamePlugins;
 
-    public GameCatalogController(GameCatalog gameCatalog) {
-            this.gameCatalog = gameCatalog;
+    public GameCatalogController(List<GamePlugin> gamePlugins) {
+        this.gamePlugins = gamePlugins;
     }
 
-    @GetMapping("/games")
-    public Collection<String> getGameIds(){
-        return gameCatalog.getGameIds();
+    @GetMapping("/games/catalog")
+    public List<GameInfo> getGames(
+            @RequestHeader(
+                    value = "Accept-Language",
+                    required = false,
+                    defaultValue = "en"
+            )
+            String language
+    ) {
+
+        Locale locale = Locale.forLanguageTag(language);
+
+        return gamePlugins.stream()
+                .map(plugin ->
+                        new GameInfo(
+                                plugin.getGameId(),
+                                plugin.getName(locale)
+                        )
+                )
+                .toList();
     }
-
-   // @PostMapping("/games")
-
 }

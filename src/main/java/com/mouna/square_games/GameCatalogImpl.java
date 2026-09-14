@@ -9,16 +9,29 @@ import java.util.List;
 @Component
 public class GameCatalogImpl implements GameCatalog{
 
-    private final GameFactory gameFactory;
+    private final List<GameFactory> gameFactories;
 
-    public GameCatalogImpl(GameFactory gameFactory){
+    public GameCatalogImpl(List<GameFactory> gameFactories){
 
-        this.gameFactory = gameFactory;
+        this.gameFactories = gameFactories;
   }
 
   @Override
     public Collection<String> getGameIds(){
 
-        return List.of(gameFactory.getGameFactoryId());
+        return gameFactories.stream()
+                .map(GameFactory::getGameFactoryId)
+                .toList();
+  }
+
+  @Override
+    public GameFactory getGameFactory(String gameType){
+
+      return gameFactories.stream()
+              .filter(factory ->
+                      factory.getGameFactoryId().equals(gameType)
+              )
+              .findFirst()
+              .orElse(null);
   }
 }
