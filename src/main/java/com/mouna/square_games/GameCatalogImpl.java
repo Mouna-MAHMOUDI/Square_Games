@@ -11,6 +11,7 @@ public class GameCatalogImpl implements GameCatalog{
 
     private final List<GameFactory> gameFactories;
 
+
     public GameCatalogImpl(List<GameFactory> gameFactories){
 
         this.gameFactories = gameFactories;

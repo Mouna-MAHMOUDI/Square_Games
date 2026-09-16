@@ -8,7 +8,6 @@ import fr.le_campus_numerique.square_games.engine.TokenPosition;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,17 +16,14 @@ import java.util.UUID;
 public class GameServiceImpl implements GameService {
 
     private final List<GamePlugin> gamePlugins;
+    private final GameDao gameDao;
 
-    /*
-     * Stockage temporaire des parties en mémoire.
-     *
-     * Attention :
-     * les parties sont perdues lorsque l'application redémarre.
-     */
-    private final Map<UUID, Game> games = new HashMap<>();
-
-    public GameServiceImpl(List<GamePlugin> gamePlugins) {
+    public GameServiceImpl(
+            List<GamePlugin> gamePlugins,
+            GameDao gameDao
+    ) {
         this.gamePlugins = gamePlugins;
+        this.gameDao = gameDao;
     }
 
     /*
@@ -86,9 +82,9 @@ public class GameServiceImpl implements GameService {
         }
 
         /*
-         * On mémorise la partie.
+         * On sauvegarde la partie via le DAO.
          */
-        games.put(game.getId(), game);
+        gameDao.upsert(game);
 
         return game;
     }
@@ -99,15 +95,12 @@ public class GameServiceImpl implements GameService {
     @Override
     public Game getGame(UUID gameId) {
 
-        Game game = games.get(gameId);
-
-        if (game == null) {
-            throw new IllegalArgumentException(
-                    "Partie introuvable : " + gameId
-            );
-        }
-
-        return game;
+        return gameDao.findById(gameId.toString())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Partie introuvable : " + gameId
+                        )
+                );
     }
 
     /*
@@ -243,22 +236,85 @@ public class GameServiceImpl implements GameService {
                 );
 
         /*
-         * Recherche du token dans le board.
+         * ============================================================
+         * 1. Vérifier que la destination est dans le plateau
+         * ============================================================
+         */
+        if (moveRequest.x() < 0
+                || moveRequest.x() >= game.getBoardSize()
+                || moveRequest.y() < 0
+                || moveRequest.y() >= game.getBoardSize()) {
+
+            throw new IllegalArgumentException(
+                    "Position invalide : " + destination
+            );
+        }
+
+        /*
+         * ============================================================
+         * 2. Vérifier que la destination est libre
+         * ============================================================
+         */
+        Map<CellPosition, Token> board =
+                game.getBoard();
+
+        if (board.containsKey(destination)) {
+
+            throw new IllegalArgumentException(
+                    "La destination est déjà occupée : "
+                            + destination
+            );
+        }
+
+        /*
+         * ============================================================
+         * 3. Chercher le token dans le BOARD
+         *
+         * Cas du Taquin :
+         * le token est déjà sur le plateau et possède
+         * donc une position.
+         * ============================================================
          */
         Token tokenToMove = null;
+        boolean tokenIsOnBoard = false;
 
-        for (Token token : game.getBoard().values()) {
+        for (Token token : board.values()) {
 
             if (token.getName()
                     .equals(moveRequest.tokenName())) {
 
                 tokenToMove = token;
+                tokenIsOnBoard = true;
                 break;
             }
         }
 
         /*
-         * Le token n'existe pas.
+         * ============================================================
+         * 4. Si le token n'est pas sur le board,
+         *    chercher dans les remainingTokens.
+         *
+         * Cas du Tic-Tac-Toe :
+         * les X et les 0 commencent dans remainingTokens.
+         * ============================================================
+         */
+        if (tokenToMove == null) {
+
+            for (Token token : game.getRemainingTokens()) {
+
+                if (token.getName()
+                        .equals(moveRequest.tokenName())) {
+
+                    tokenToMove = token;
+                    break;
+                }
+            }
+        }
+
+        /*
+         * ============================================================
+         * 5. Le token n'existe vraiment pas
+         * ============================================================
          */
         if (tokenToMove == null) {
 
@@ -269,67 +325,83 @@ public class GameServiceImpl implements GameService {
         }
 
         /*
-         * Position actuelle du token.
+         * ============================================================
+         * 6. Vérifier que le token appartient au joueur courant
+         *
+         * Cette vérification est particulièrement importante
+         * pour Tic-Tac-Toe.
+         * ============================================================
          */
-        CellPosition currentPosition =
-                tokenToMove.getPosition();
+        UUID tokenOwner =
+                tokenToMove.getOwnerId().orElse(null);
 
-        if (currentPosition == null) {
+        if (game.getCurrentPlayerId() != null
+                && tokenOwner != null
+                && !tokenOwner.equals(game.getCurrentPlayerId())) {
 
             throw new IllegalArgumentException(
-                    "Le token n'a pas de position"
-            );
-        }
-
-        /*
-         * Récupération du board.
-         */
-        Map<CellPosition, Token> board =
-                game.getBoard();
-
-        /*
-         * La destination doit être vide.
-         */
-        if (board.containsKey(destination)) {
-
-            throw new IllegalArgumentException(
-                    "La destination est déjà occupée : "
-                            + destination
-            );
-        }
-
-        /*
-         * Calcul de la distance entre
-         * la position actuelle et la destination.
-         */
-        int distance =
-                Math.abs(
-                        currentPosition.x()
-                                - destination.x()
-                )
-                        +
-                        Math.abs(
-                                currentPosition.y()
-                                        - destination.y()
-                        );
-
-        /*
-         * Le token doit être directement
-         * voisin de la destination.
-         */
-        if (distance != 1) {
-
-            throw new IllegalArgumentException(
-                    "Le token "
+                    "Ce n'est pas le tour du joueur possédant le token "
                             + moveRequest.tokenName()
-                            + " ne peut pas se déplacer vers "
-                            + destination
             );
         }
 
         /*
-         * Demande au moteur d'effectuer
-         * réellement le déplacement.
+         * ============================================================
+         * 7. CAS 1 : TOKEN DÉJÀ SUR LE BOARD
+         *
+         * C'est le fonctionnement du Taquin.
+         * Le token doit être voisin de la destination.
+         * ============================================================
+         */
+        if (tokenIsOnBoard) {
+
+            CellPosition currentPosition =
+                    tokenToMove.getPosition();
+
+            if (currentPosition == null) {
+
+                throw new IllegalArgumentException(
+                        "Le token n'a pas de position"
+                );
+            }
+
+            /*
+             * Distance de Manhattan.
+             */
+            int distance =
+                    Math.abs(
+                            currentPosition.x()
+                                    - destination.x()
+                    )
+                            +
+                            Math.abs(
+                                    currentPosition.y()
+                                            - destination.y()
+                            );
+
+            /*
+             * Le token doit être directement voisin
+             * de la destination.
+             */
+            if (distance != 1) {
+
+                throw new IllegalArgumentException(
+                        "Le token "
+                                + moveRequest.tokenName()
+                                + " ne peut pas se déplacer vers "
+                                + destination
+                );
+            }
+        }
+
+        /*
+         * ============================================================
+         * 8. Déplacement / placement du token
+         *
+         * - Taquin : le token change de position.
+         * - Tic-Tac-Toe : le token passe de remainingTokens
+         *   à une position sur le board.
+         * ============================================================
          */
         try {
 
@@ -345,10 +417,17 @@ public class GameServiceImpl implements GameService {
         }
 
         /*
-         * Le même objet Game a été modifié
-         * par le moteur.
+         * ============================================================
+         * 9. Sauvegarder la partie en PostgreSQL
+         * ============================================================
+         */
+        gameDao.upsert(game);
+
+        /*
+         * ============================================================
+         * 10. Retourner la partie mise à jour
+         * ============================================================
          */
         return game;
     }
 }
-
