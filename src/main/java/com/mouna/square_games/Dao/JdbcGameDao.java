@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Dao;
 
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameFactory;
@@ -6,7 +6,6 @@ import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionExce
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;

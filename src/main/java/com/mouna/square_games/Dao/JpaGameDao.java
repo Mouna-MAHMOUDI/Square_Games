@@ -1,11 +1,11 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Dao;
 
+import com.mouna.square_games.entity.GameEntityRepository;
 import com.mouna.square_games.entity.GameEntity;
 import com.mouna.square_games.entity.GameTokenEntity;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.GameFactory;
 import fr.le_campus_numerique.square_games.engine.InconsistentGameDefinitionException;
-import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 import org.springframework.stereotype.Repository;
 

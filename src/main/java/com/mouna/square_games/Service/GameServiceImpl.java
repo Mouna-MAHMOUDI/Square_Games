@@ -1,15 +1,22 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Service;
 
+import com.mouna.square_games.Dao.GameDao;
+import com.mouna.square_games.GameCreationParams;
+import com.mouna.square_games.MoveRequest;
+import com.mouna.square_games.plugin.GamePlugin;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.InvalidPositionException;
 import fr.le_campus_numerique.square_games.engine.Token;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -17,13 +24,16 @@ public class GameServiceImpl implements GameService {
 
     private final List<GamePlugin> gamePlugins;
     private final GameDao gameDao;
+    private final UserClient userClient;
 
     public GameServiceImpl(
             List<GamePlugin> gamePlugins,
-            GameDao gameDao
+            GameDao gameDao,
+            UserClient userClient
     ) {
         this.gamePlugins = gamePlugins;
         this.gameDao = gameDao;
+        this.userClient = userClient;
     }
 
     /*
@@ -47,9 +57,41 @@ public class GameServiceImpl implements GameService {
      * Création d'une nouvelle partie.
      */
     @Override
-    public Game createGame(GameCreationParams params) {
+    public Game createGame(String userId, GameCreationParams params) {
 
         GamePlugin plugin = getPlugin(params.gameType());
+        UUID playerId = UUID.fromString(userId);
+
+        if (!userClient.userExists(playerId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Utilisateur inconnu"
+            );
+        }
+
+        Set<UUID> playerIds = new java.util.LinkedHashSet<>();
+        playerIds.add(playerId);
+
+        if (params.opponentIds() != null){
+            playerIds.addAll(params.opponentIds());
+        }
+
+        if (params.playerCount() != null
+                && playerIds.size() != params.playerCount()) {
+
+            throw new IllegalArgumentException(
+                    "Le nombre de joueurs ne correspond pas à playerCount"
+            );
+        }
+
+        for (UUID opponentId : playerIds) {
+            if (!userClient.userExists(opponentId)) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Adversaire inconnu : " + opponentId
+                );
+            }
+        }
 
         Game game;
 
@@ -76,8 +118,8 @@ public class GameServiceImpl implements GameService {
             }
 
             game = plugin.createGame(
-                    params.playerCount(),
-                    params.boardSize()
+                    params.boardSize(),
+                    playerIds
             );
         }
 
@@ -92,6 +134,19 @@ public class GameServiceImpl implements GameService {
     /*
      * Récupération d'une partie existante.
      */
+
+    @Override
+    public List<Game> getGames(String userId) {
+
+        UUID playerId = UUID.fromString(userId);
+
+        return gameDao.findAll()
+                .filter(game ->
+                        game.getPlayerIds().contains(playerId)
+                )
+                .toList();
+    }
+
     @Override
     public Game getGame(UUID gameId) {
 
@@ -224,10 +279,22 @@ public class GameServiceImpl implements GameService {
     @Override
     public Game playMove(
             UUID gameId,
+            String userId,
             MoveRequest moveRequest
     ) {
 
         Game game = getGame(gameId);
+
+        UUID playerId = UUID.fromString(userId);
+
+        if (game.getCurrentPlayerId() == null
+                || !game.getCurrentPlayerId().equals(playerId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Ce n'est pas votre tour"
+            );
+        }
 
         CellPosition destination =
                 new CellPosition(

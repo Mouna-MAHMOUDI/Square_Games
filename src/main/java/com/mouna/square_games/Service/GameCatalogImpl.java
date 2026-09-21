@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Service;
 
 import fr.le_campus_numerique.square_games.engine.GameFactory;
 import org.springframework.stereotype.Component;
@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class GameCatalogImpl implements GameCatalog{
+public class GameCatalogImpl implements GameCatalog {
 
     private final List<GameFactory> gameFactories;
 

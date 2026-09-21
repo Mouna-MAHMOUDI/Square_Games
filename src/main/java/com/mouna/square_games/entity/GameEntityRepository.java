@@ -1,6 +1,5 @@
-package com.mouna.square_games;
+package com.mouna.square_games.entity;
 
-import com.mouna.square_games.entity.GameEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

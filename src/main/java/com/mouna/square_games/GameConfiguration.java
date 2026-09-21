@@ -5,8 +5,9 @@ import fr.le_campus_numerique.square_games.engine.taquin.TaquinGameFactory;
 import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
-    @Configuration
+@Configuration
     public class GameConfiguration {
 
         @Bean
@@ -22,5 +23,10 @@ import org.springframework.context.annotation.Configuration;
         @Bean
         public TaquinGameFactory taquinGameFactory(){
             return new TaquinGameFactory();
+        }
+
+        @Bean
+        public RestClient.Builder restClientBuilder(){
+            return RestClient.builder();
         }
 }

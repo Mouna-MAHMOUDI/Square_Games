@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.plugin;
 
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.tictactoe.TicTacToeGameFactory;
@@ -7,6 +7,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 @Component
 public class TicTacToePlugin implements GamePlugin {
@@ -31,12 +33,20 @@ public class TicTacToePlugin implements GamePlugin {
 
     @Override
     public String getGameId() {
+
         return gameFactory.getGameFactoryId();
     }
 
     @Override
     public Game createGame(int playerCount, int boardSize) {
+
         return gameFactory.createGame(playerCount, boardSize);
+    }
+
+    @Override
+    public Game createGame(int boardSize, Set<UUID> playerIds) {
+
+        return gameFactory.createGame(boardSize, playerIds);
     }
 
     @Override

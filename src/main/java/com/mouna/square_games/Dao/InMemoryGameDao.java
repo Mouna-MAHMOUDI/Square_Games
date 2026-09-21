@@ -1,7 +1,6 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Dao;
 
 import fr.le_campus_numerique.square_games.engine.Game;
-import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +8,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 
-public class InMemoryGameDao implements GameDao{
+public class InMemoryGameDao implements GameDao {
     private final Map<String, Game> games = new HashMap<>();
 
     @Override

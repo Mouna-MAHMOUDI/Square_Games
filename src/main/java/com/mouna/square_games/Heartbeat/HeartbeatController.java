@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Heartbeat;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

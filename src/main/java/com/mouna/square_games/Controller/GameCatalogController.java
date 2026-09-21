@@ -1,5 +1,7 @@
-package com.mouna.square_games;
+package com.mouna.square_games.Controller;
 
+import com.mouna.square_games.GameInfo;
+import com.mouna.square_games.plugin.GamePlugin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
