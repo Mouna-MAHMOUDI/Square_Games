@@ -47,7 +47,8 @@ public class GameServiceImpl implements GameService {
                 )
                 .findFirst()
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "Type de jeu inconnu : " + gameType
                         )
                 );
@@ -79,7 +80,8 @@ public class GameServiceImpl implements GameService {
         if (params.playerCount() != null
                 && playerIds.size() != params.playerCount()) {
 
-            throw new IllegalArgumentException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "Le nombre de joueurs ne correspond pas à playerCount"
             );
         }
@@ -112,7 +114,8 @@ public class GameServiceImpl implements GameService {
             if (params.playerCount() == null
                     || params.boardSize() == null) {
 
-                throw new IllegalArgumentException(
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
                         "playerCount et boardSize doivent être fournis ensemble"
                 );
             }
@@ -152,7 +155,8 @@ public class GameServiceImpl implements GameService {
 
         return gameDao.findById(gameId.toString())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "Partie introuvable : " + gameId
                         )
                 );
