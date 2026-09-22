@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

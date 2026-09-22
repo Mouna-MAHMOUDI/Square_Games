@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.config;
 
 import fr.le_campus_numerique.square_games.engine.connectfour.ConnectFourGameFactory;
 import fr.le_campus_numerique.square_games.engine.taquin.TaquinGameFactory;

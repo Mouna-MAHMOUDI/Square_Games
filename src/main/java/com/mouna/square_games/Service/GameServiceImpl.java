@@ -1,8 +1,9 @@
 package com.mouna.square_games.Service;
 
-import com.mouna.square_games.Dao.GameDao;
-import com.mouna.square_games.GameCreationParams;
-import com.mouna.square_games.MoveRequest;
+import com.mouna.square_games.client.UserClient;
+import com.mouna.square_games.dao.GameDao;
+import com.mouna.square_games.dto.GameCreationParams;
+import com.mouna.square_games.dto.MoveRequest;
 import com.mouna.square_games.plugin.GamePlugin;
 import fr.le_campus_numerique.square_games.engine.CellPosition;
 import fr.le_campus_numerique.square_games.engine.Game;

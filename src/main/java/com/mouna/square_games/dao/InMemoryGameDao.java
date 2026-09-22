@@ -1,4 +1,4 @@
-package com.mouna.square_games.Dao;
+package com.mouna.square_games.dao;
 
 import fr.le_campus_numerique.square_games.engine.Game;
 

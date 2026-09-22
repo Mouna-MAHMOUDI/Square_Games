@@ -1,7 +1,7 @@
 package com.mouna.square_games.Service;
 
-import com.mouna.square_games.GameCreationParams;
-import com.mouna.square_games.MoveRequest;
+import com.mouna.square_games.dto.GameCreationParams;
+import com.mouna.square_games.dto.MoveRequest;
 import fr.le_campus_numerique.square_games.engine.Game;
 import fr.le_campus_numerique.square_games.engine.TokenPosition;
 

@@ -1,4 +1,4 @@
-package com.mouna.square_games.Dao;
+package com.mouna.square_games.dao;
 
 import com.mouna.square_games.entity.GameEntityRepository;
 import com.mouna.square_games.entity.GameEntity;

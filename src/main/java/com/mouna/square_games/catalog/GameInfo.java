@@ -1,4 +1,4 @@
-package com.mouna.square_games;
+package com.mouna.square_games.catalog;
 
 public record GameInfo(
         String id,

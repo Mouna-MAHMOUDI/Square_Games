@@ -1,4 +1,4 @@
-package com.mouna.square_games.Service;
+package com.mouna.square_games.client;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

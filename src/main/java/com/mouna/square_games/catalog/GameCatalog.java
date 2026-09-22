@@ -1,4 +1,4 @@
-package com.mouna.square_games.Service;
+package com.mouna.square_games.catalog;
 
 import fr.le_campus_numerique.square_games.engine.GameFactory;
 

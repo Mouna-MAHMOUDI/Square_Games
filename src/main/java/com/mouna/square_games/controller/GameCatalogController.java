@@ -1,6 +1,6 @@
-package com.mouna.square_games.Controller;
+package com.mouna.square_games.controller;
 
-import com.mouna.square_games.GameInfo;
+import com.mouna.square_games.catalog.GameInfo;
 import com.mouna.square_games.plugin.GamePlugin;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
