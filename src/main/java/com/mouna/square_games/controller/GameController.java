@@ -7,8 +7,11 @@ import fr.le_campus_numerique.square_games.engine.Game;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 import java.util.UUID;
@@ -51,13 +54,14 @@ public class GameController {
                     description = "Identifiant du joueur qui crée la partie",
                     required = true
             )
-            @RequestHeader("X-UserId") String userId,
+            Authentication authentication,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Paramètres nécessaires à la création de la partie",
                     required = true
             )
             @RequestBody GameCreationParams params
     ) {
+        String userId = authentication.getName();
         return gameService.createGame(userId, params);
     }
 
@@ -101,7 +105,10 @@ public class GameController {
                     description = "Identifiant du joueur",
                     required = true
             )
-            @RequestHeader("X-UserId") String userId){
+            Authentication authentication
+
+    ){
+        String userId = authentication.getName();
         return gameService.getGames(userId);
     }
 
@@ -161,13 +168,28 @@ public class GameController {
                     description = "Identifiant du joueur qui joue le coup",
                     required = true
             )
-            @RequestHeader("X-UserId") String userId,
+            Authentication authentication,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Informations du coup à jouer",
                     required = true
             )
             @RequestBody MoveRequest moveRequest
     ) {
+        System.out.println("========== PLAY MOVE CONTROLLER ==========");
+        System.out.println("GAME ID = " + gameId);
+        System.out.println("AUTH = " + authentication);
+        System.out.println("TOKEN NAME = " + moveRequest.tokenName());
+        System.out.println("X = " + moveRequest.x());
+        System.out.println("Y = " + moveRequest.y());
+        System.out.println("==========================================");
+        if (authentication == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Authentication absente"
+            );
+        }
+
+        String userId = authentication.getName();
         return gameService.playMove(gameId, userId, moveRequest);
     }
 }
